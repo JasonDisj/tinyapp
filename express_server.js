@@ -31,7 +31,6 @@ app.post("/urls", (req, res) => {
   let randomUrl = generateRandomString();
   console.log(req.body.longURL); // body: { longURL: 'www.nba.com' }
   urlDatabase[randomUrl] = req.body.longURL;
-  // res.send("Ok");
   
   res.redirect(`/urls/${randomUrl}`); // <=== redirect to ro /urls/:id
 });
@@ -47,10 +46,25 @@ app.get("/urls/:id", (req, res) => { // :id like a container to have shortUrls
   res.render("urls_show", templateVars);
 });
 
+// Delete button
 app.post("/urls/:id/delete", (req, res) => {
   const id = req.params.id
   console.log("delete route id", id);
   delete urlDatabase[id];
+  res.redirect("/urls");
+});
+
+// Edit button
+app.get("/urls/:id/edit", (req, res) => {
+  const id = req.params.id
+  res.redirect(`/urls/${id}`);
+});
+
+// Submit button
+app.post("/urls/:id/", (req, res) => {
+  const id = req.params.id
+  const longUrl = req.body.longUrl
+  urlDatabase[id] = longUrl;
   res.redirect("/urls");
 });
 
