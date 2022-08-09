@@ -1,4 +1,5 @@
 const express = require("express");
+const morgan = require("morgan");
 const app = express();
 const PORT = 8080;
 const generateRandomString = function() {
@@ -10,10 +11,12 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+// middleware
+app.use(morgan("dev"));
 app.set("view engine", "ejs");
-
 app.use(express.urlencoded({ extended: true }));
 
+// Home page
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -30,7 +33,7 @@ app.post("/urls", (req, res) => {
   urlDatabase[randomUrl] = req.body.longURL;
   // res.send("Ok");
   
-  res.redirect(`/urls/${randomUrl}`);
+  res.redirect(`/urls/${randomUrl}`); // <=== redirect to ro /urls/:id
 });
 
 app.get("/urls/new", (req, res) => {
@@ -42,6 +45,13 @@ app.get("/urls/:id", (req, res) => { // :id like a container to have shortUrls
   const shortUrl = req.params.id
   const templateVars = { id: shortUrl, longURL: urlDatabase[shortUrl]};
   res.render("urls_show", templateVars);
+});
+
+app.post("/urls/:id/delete", (req, res) => {
+  const id = req.params.id
+  console.log("delete route id", id);
+  delete urlDatabase[id];
+  res.redirect("/urls");
 });
 
 app.get("/u/:id", (req, res) => {
