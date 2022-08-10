@@ -1,6 +1,7 @@
 const express = require("express");
-const morgan = require("morgan");
 const app = express();
+const morgan = require("morgan");
+const cookieParser = require('cookie-parser');
 const PORT = 8080;
 const generateRandomString = function() {
   return Math.random().toString(36).substr(2, 6);
@@ -12,9 +13,10 @@ const urlDatabase = {
 };
 
 // middleware
-app.use(morgan("dev"));
-app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
+app.set("view engine", "ejs");
+app.use(morgan("dev"));
+app.use(cookieParser());
 
 // Home page
 app.get("/", (req, res) => {
@@ -22,7 +24,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { urls: urlDatabase, username: req.cookies["username"]};
   res.render("urls_index", templateVars);
 });
 
@@ -42,7 +44,7 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:id", (req, res) => { // :id like a container to have shortUrls
   console.log(req.params.id);
   const shortUrl = req.params.id
-  const templateVars = { id: shortUrl, longURL: urlDatabase[shortUrl]};
+  const templateVars = { id: shortUrl, longURL: urlDatabase[shortUrl], username: req.cookies["username"]};
   res.render("urls_show", templateVars);
 });
 
@@ -58,6 +60,20 @@ app.post("/urls/:id/delete", (req, res) => {
 app.get("/urls/:id/edit", (req, res) => {
   const id = req.params.id
   res.redirect(`/urls/${id}`);
+});
+
+// Login button (set up cookie)
+app.post("/login", (req, res) => {
+  const username = req.body.user;
+  // console.log("req.body", req.body);
+  res.cookie("username", username);
+  res.redirect("/urls");
+});
+
+// logout status
+app.post("/logout", (req, res) => {
+  res.clearCookie("username");
+  res.redirect("/urls");
 });
 
 // Submit button
