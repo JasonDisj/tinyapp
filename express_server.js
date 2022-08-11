@@ -1,7 +1,8 @@
 const express = require("express");
 const app = express();
 const morgan = require("morgan");
-const cookieParser = require('cookie-parser');
+// const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
 const bcrypt = require("bcryptjs");
 const PORT = 8080;
 
@@ -30,7 +31,11 @@ const userDatabase = { // userdatabase example
 app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 app.use(morgan("dev"));
-app.use(cookieParser());
+// app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['123', '456']
+}));
 
 // Home page
 app.get("/", (req, res) => {
@@ -108,7 +113,8 @@ app.post("/register", (req, res) => {
     const password = req.body.password;
     const hashpassword = bcrypt.hashSync(password, 10);
     userDatabase[randomUsername] = {id: randomUsername, email: req.body.email, password: hashpassword};
-    res.cookie("user_id", randomUsername);
+    // res.cookie("user_id", randomUsername);
+    req.session.user_id = randomUsername;
     res.redirect("/urls");
   });
 
@@ -147,7 +153,8 @@ app.post("/login", (req, res) => {
     return;
   }
   if (bcrypt.compareSync(req.body.password, existingUser.password)) {
-    res.cookie("user_id", existingUser.id);
+    // res.cookie("user_id", existingUser.id);
+    req.session.user_id = existingUser.id;
     res.redirect("/urls");
     } else {
       res.status(403).send("The password is not correct!");
